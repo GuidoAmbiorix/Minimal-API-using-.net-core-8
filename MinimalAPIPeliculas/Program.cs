@@ -4,7 +4,7 @@ using MinimalAPIPeliculas;
 var builder = WebApplication.CreateBuilder(args);
 //Inicio de area de los servicios
 
-builder.Services.AddDbContext<ApplicationDbContext>(opciones => opciones.UseSqlServer("name=DefaultConnection"))
+builder.Services.AddDbContext<ApplicationDbContext>(opciones => opciones.UseSqlServer("name=DefaultConnection"));
 
 builder.Services.AddCors(opciones =>
 {

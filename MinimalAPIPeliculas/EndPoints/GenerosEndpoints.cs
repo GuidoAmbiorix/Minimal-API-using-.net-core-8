@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
+using MinimalAPIPeliculas.DTOs;
 using MinimalAPIPeliculas.Entidades;
+using MinimalAPIPeliculas.Migrations;
 using MinimalAPIPeliculas.Repositorios;
 
 namespace MinimalAPIPeliculas.EndPoints
@@ -16,13 +19,14 @@ namespace MinimalAPIPeliculas.EndPoints
             return group;
         }
 
-        static async Task<Ok<List<Genero>>> ObtenerGeneros(IRepositorioGeneros repositorio)
+        static async Task<Ok<List<GeneroDTO>>> ObtenerGeneros(IRepositorioGeneros repositorio,IMapper mapper)
         {
             var generos = await repositorio.ObtenerTodos();
-            return TypedResults.Ok(generos);
+            var generosDTO = mapper.Map<List<GeneroDTO>>(generos);
+            return TypedResults.Ok(generosDTO);
         }
 
-        static async Task<Results<Ok<Genero>, NotFound>> ObtenerPorId(IRepositorioGeneros repositorio, int id)
+        static async Task<Results<Ok<GeneroDTO>, NotFound>> ObtenerPorId(IRepositorioGeneros repositorio, int id,IMapper mapper)
         {
             var genero = await repositorio.ObtenerPorId(id);
 
@@ -31,16 +35,21 @@ namespace MinimalAPIPeliculas.EndPoints
                 return TypedResults.NotFound();
             }
 
-            return TypedResults.Ok(genero);
+            var generoDTO = mapper.Map<GeneroDTO>(genero);
+
+            return TypedResults.Ok(generoDTO);
         }
 
-        static async Task<Created<Genero>> CrearGenero(Genero genero, IRepositorioGeneros repositorio)
+        static async Task<Created<GeneroDTO>> CrearGenero(CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repositorio,IMapper mapper)
         {
+
+            var genero = mapper.Map<Genero>(crearGeneroDTO);
             var id = await repositorio.Crear(genero);
-            return TypedResults.Created($"/generos/{id}", genero);
+            var generoDTO = mapper.Map<GeneroDTO>(genero);
+            return TypedResults.Created($"/generos/{id}", generoDTO);
         }
 
-        static async Task<Results<NotFound, NoContent>> EditarGenero(int id, Genero genero, IRepositorioGeneros repositorio)
+        static async Task<Results<NotFound, NoContent>> EditarGenero(int id, CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repositorio,IMapper mapper)
         {
             var existe = await repositorio.Existe(id);
 
@@ -48,6 +57,9 @@ namespace MinimalAPIPeliculas.EndPoints
             {
                 return TypedResults.NotFound();
             }
+
+            var genero = mapper.Map<Genero>(crearGeneroDTO);
+            genero.Id = id;
 
             await repositorio.Actualizar(genero);
             return TypedResults.NoContent();

@@ -23,6 +23,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped <IRepositorioGeneros, RepositorioGeneros>();
+builder.Services.AddScoped<IRepositorioActores, RepositorioActores>();
+
 builder.Services.AddAutoMapper(typeof(Program));
 
 //Fin de area de los servicios
@@ -36,6 +38,9 @@ app.UseSwaggerUI();
 app.UseCors();
 
 var endpointsGeneros = app.MapGroup("/generos").MapGeneros();
+var endpointsActores = app.MapGroup("/actores").MapActores();
+
+
 
 //Fin de area de los middleware
 app.Run();

@@ -5,11 +5,14 @@ using MinimalAPIPeliculas.DTOs;
 using MinimalAPIPeliculas.Entidades;
 using MinimalAPIPeliculas.Migrations;
 using MinimalAPIPeliculas.Repositorios;
+using MinimalAPIPeliculas.Servicios;
 
 namespace MinimalAPIPeliculas.EndPoints
 {
     public static class ActoresEndpoints
     {
+
+        private static readonly string contenedor = "actores";
         public static RouteGroupBuilder MapActores(this RouteGroupBuilder group)
         {
             group.MapGet("/", ObtenerActores);
@@ -41,16 +44,23 @@ namespace MinimalAPIPeliculas.EndPoints
             return TypedResults.Ok(ActorDTO);
         }
 
-        static async Task<Created<ActorDTO>> CrearActor([FromForm] CrearActorDTO crearActorDTO, IRepositorioActores repositorio,IMapper mapper)
+        static async Task<Created<ActorDTO>> CrearActor([FromForm] CrearActorDTO crearActorDTO, IRepositorioActores repositorio,IMapper mapper, IAlmacenadorArchivos almacenadorArchivos)
         {
-
+            
             var Actor = mapper.Map<Actor>(crearActorDTO);
+            
+            if(crearActorDTO.Foto is not null)
+            {
+                var url = await almacenadorArchivos.Almacenar(contenedor, crearActorDTO.Foto);
+                Actor.Foto = url;
+            }
+            
             var id = await repositorio.Crear(Actor);
             var ActorDTO = mapper.Map<ActorDTO>(Actor);
             return TypedResults.Created($"/Actores/{id}", ActorDTO);
         }
 
-        static async Task<Results<NotFound, NoContent>> EditarActor(int id,[FromForm] CrearActorDTO crearActorDTO, IRepositorioActores repositorio,IMapper mapper)
+        static async Task<Results<NotFound, NoContent>> EditarActor(int id,[FromForm] CrearActorDTO crearActorDTO, IRepositorioActores repositorio,IMapper mapper, IAlmacenadorArchivos almacenadorArchivos)
         {
             var existe = await repositorio.Existe(id);
 
